@@ -6,6 +6,6 @@ export const APP_CACHES = {
 export const PRE_ASSETS = [
   '/service-worker/',
   '/service-worker/index.html',
-  '/service-worker/service-worker-main.js',
+  '/service-worker/main.js',
   '/service-worker/service-worker.js',
 ];
