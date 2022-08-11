@@ -10,5 +10,6 @@ document.getElementById('logo').addEventListener('click', () => {
 });
 
 document.getElementById('showCaches').addEventListener('click', async () => {
-  console.log({ keys: await caches.keys() });
+  const keys = await caches.keys();
+  console.log({ keys });
 });

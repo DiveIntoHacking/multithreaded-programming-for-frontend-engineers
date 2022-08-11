@@ -2,7 +2,7 @@
 // メインスレッドは、worker を作成する側のスレッドのため、親スレッドと呼ぶこともある。
 
 if (!!window.SharedWorker) {
-  const worker = new SharedWorker('shared-worker.js');
+  const worker = new SharedWorker('shared-worker.js', { type: 'module' });
 
   document.getElementById('encode').onclick = function () {
     const element = document.getElementById('string');
