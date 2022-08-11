@@ -4,7 +4,7 @@ if ('serviceWorker' in navigator) {
 
 document.getElementById('logo').addEventListener('click', () => {
   const imgElement = document.createElement('img');
-  const logoSrcPath = '/logo.jpg';
+  const logoSrcPath = './logo.jpg';
   imgElement.src = logoSrcPath;
   document.querySelector('#main').appendChild(imgElement);
 });
