@@ -1,3 +1,4 @@
+// initialization
 const showCachesElement = document.getElementById('show-caches');
 const removeCachesElement = document.getElementById('remove-caches');
 const cachesElement = document.getElementById('caches');
@@ -7,18 +8,30 @@ const unregisterServiceWorkerElement = document.getElementById(
 const logoElement = document.getElementById('logo');
 const clearConsoleElement = document.getElementById('clear-console');
 const reloadLocationElement = document.getElementById('reload-location');
+const mainElement = document.getElementById('main');
+const serviceWorker = navigator.serviceWorker;
+clearConsoleElement.addEventListener('click', () => console.clear());
+reloadLocationElement.addEventListener('click', () => window.location.reload());
 
-if (!!navigator.serviceWorker) {
-  navigator.serviceWorker.register('service-worker.js', {
-    type: 'module',
-  });
+if (!!serviceWorker) {
+  const registerServiceWorker = async () => {
+    const serviceWorkerRegistration = await serviceWorker.register(
+      'service-worker.js',
+      {
+        type: 'module',
+      }
+    );
+    console.log({ serviceWorkerRegistration });
+  };
+
+  registerServiceWorker();
 }
 
 logoElement.addEventListener('click', () => {
   const imgElement = document.createElement('img');
   const logoSrcPath = './logo.jpg';
   imgElement.src = logoSrcPath;
-  document.querySelector('#main').appendChild(imgElement);
+  mainElement.prepend(imgElement);
 });
 
 showCachesElement.addEventListener('click', async () => {
@@ -39,15 +52,14 @@ removeCachesElement.addEventListener('click', async () => {
 });
 
 unregisterServiceWorkerElement.addEventListener('click', async () => {
-  const registrations = await navigator.serviceWorker.getRegistrations();
-  registrations.forEach(async (registration) => {
+  const serviceWorkerRegistrations = await serviceWorker.getRegistrations();
+  serviceWorkerRegistrations.forEach(async (registration) => {
     const result = await registration.unregister();
-    if (result) console.log(registration);
+    if (result) {
+      console.log('unregister passed.');
+      console.log(registration);
+    } else {
+      console.log('unregister failed.');
+    }
   });
 });
-
-const clearConsole = () => console.clear();
-clearConsoleElement.addEventListener('click', clearConsole);
-
-const reloadLocation = () => location.reload();
-reloadLocationElement.addEventListener('click', reloadLocation);

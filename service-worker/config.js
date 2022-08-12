@@ -1,9 +1,10 @@
 export const CACHES = {
-  INSTALLATION: 'INSTALLATION_v0.0.1',
+  INSTALLATION: '0.0.1',
   RUNTIME: 'RUNTIME',
 };
 
-// The following assets must be under scope of service worker.
+// The following assets must be under the scope of service worker.
+// They will be cached right after installation.
 export const ASSETS = [
   '/service-worker/',
   '/service-worker/index.html',
