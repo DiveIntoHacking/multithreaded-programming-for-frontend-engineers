@@ -1,29 +1,41 @@
-import { APP_CACHES, PRE_ASSETS } from './config.js';
+import { CACHES, ASSETS } from './config.js';
 
+// initialization
+const runtimeCacheName = CACHES.RUNTIME;
+const installationCacheName = CACHES.INSTALLATION;
+const cacheNames = Object.values(CACHES);
+const origin = self.location.origin;
+//=> origin is like "http://127.0.0.1:5500"
+
+// You can setup event listers in service worker script.
+//   1. install
+//   2. activate
+//   3. fetch
 self.addEventListener('install', (installEvent) => {
   installEvent.waitUntil(
     caches
-      .open(APP_CACHES['PRE'])
-      .then((cache) => cache.addAll(PRE_ASSETS))
+      .open(installationCacheName)
+      .then((cache) => cache.addAll(ASSETS))
       .then(self.skipWaiting())
   );
 });
-
-const activeCaches = Object.values(APP_CACHES);
 
 self.addEventListener('activate', (extendableEvent) => {
   extendableEvent.waitUntil(
     caches
       .keys()
-      .then((keys) => {
-        console.log({ keys });
-        const oldPreCaches = keys.filter((key) => !activeCaches.includes(key));
-        return oldPreCaches;
+      .then((cacheNamesUsedInBrowser) => {
+        console.log({ cacheNamesUsedInBrowser });
+        const unusedCacheNames = cacheNamesUsedInBrowser.filter(
+          (key) => !cacheNames.includes(key)
+        );
+        console.log({ unusedCacheNames });
+        return unusedCacheNames;
       })
-      .then((oldPreCaches) => {
+      .then((unusedCacheNames) => {
         const result = Promise.all(
-          oldPreCaches.map((oldPreCache) => {
-            return caches.delete(oldPreCache);
+          unusedCacheNames.map((unusedCacheName) => {
+            return caches.delete(unusedCacheName);
           })
         );
         console.log({ result });
@@ -36,13 +48,12 @@ self.addEventListener('activate', (extendableEvent) => {
   );
 });
 
-const origin = self.location.origin;
-
 self.addEventListener('fetch', (fetchEvent) => {
   const request = fetchEvent.request;
 
   if (!request.url.startsWith(origin)) return;
 
+  // cache is effective only within origin requests.
   fetchEvent.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -52,17 +63,16 @@ self.addEventListener('fetch', (fetchEvent) => {
         console.log(`${request.url} was Not Found.`);
       }
 
-      return caches.open(APP_CACHES['RUNTIME']).then((cache) => {
+      return caches.open(runtimeCacheName).then((cache) => {
         return fetch(request).then((response) => {
-          console.log({ status: response.status });
-          console.log(typeof response.status);
-          if (response.status != 200) {
-            console.log({ response });
+          console.log({ request, response, status: response.status });
 
-            return response;
-          }
+          if (response.status != 200) return response;
 
-          console.log('will save in cache');
+          console.log(
+            `${request.url} will be saved in ${runtimeCacheName} cache.`
+          );
+
           cache.put(request, response.clone());
           return response;
         });

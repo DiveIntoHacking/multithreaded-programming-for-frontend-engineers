@@ -1,35 +1,31 @@
 import { digestMessage } from '../lib/utils.js';
 
-console.log({ digestMessage });
+// To debug shared worker, open chrome://inspect/#workers with Chrome,
+// and click inspect link.
 
-// 以下に該当するものはcacheが有効
-// * 算出コストが高く、再実施しても結果が変わらないもの
-// * 極めて変わりにくく、万一古い情報だったとしても致命的な問題にはならないようなもの
+// Caching would be very effective when programme meets the followings.
+// * calculation cost is high and re-calculation won't change the result.
+// * Data in cache seldom change, if it's old, that won't be a critical error.
 let cache = {};
 
-onconnect = function (messageEvent) {
+onconnect = (messageEvent) => {
   const port = messageEvent.ports[0];
 
-  port.onmessage = async function (event) {
-    console.log({ event });
+  port.onmessage = async (event) => {
     const string = event.data;
 
     const cachedResult = cache[string];
-    console.log({ cache, cachedResult });
 
     if (cachedResult) {
       console.log('cache is found.');
       port.postMessage(cachedResult);
-
-      return;
+    } else {
+      // The following code give the result as same as "printf string | sha256sum" run on mac.
+      const result = await digestMessage(string);
+      port.postMessage(result);
+      cache[string] = result;
     }
-
-    console.log({ string });
-    const result = await digestMessage(string).then((digestBuffer) => {
-      return digestBuffer;
-    });
-
-    port.postMessage(result);
-    cache[string] = result;
   };
+
+  port.start();
 };
