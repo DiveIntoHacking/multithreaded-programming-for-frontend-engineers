@@ -33,13 +33,11 @@ self.addEventListener('activate', (extendableEvent) => {
         return unusedCacheNames;
       })
       .then((unusedCacheNames) => {
-        const result = Promise.all(
+        return Promise.all(
           unusedCacheNames.map((unusedCacheName) => {
             return caches.delete(unusedCacheName);
           })
         );
-        console.log({ result });
-        return result;
       })
       .then((result) => {
         console.log({ result });
@@ -59,9 +57,9 @@ self.addEventListener('fetch', (fetchEvent) => {
       if (cachedResponse) {
         console.log(`${request.url} was Found.`);
         return cachedResponse;
-      } else {
-        console.log(`${request.url} was Not Found.`);
       }
+
+      console.log(`${request.url} was Not Found.`);
 
       return caches.open(runtimeCacheName).then((cache) => {
         return fetch(request).then((response) => {
@@ -70,10 +68,11 @@ self.addEventListener('fetch', (fetchEvent) => {
           if (response.status != 200) return response;
 
           console.log(
-            `${request.url} will be saved in ${runtimeCacheName} cache.`
+            `The contents of ${response.url} will be saved in ${runtimeCacheName} cache.`
           );
 
           cache.put(request, response.clone());
+
           return response;
         });
       });
